@@ -1,6 +1,6 @@
 {
   "name": "ai-usage",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "Obsidian plugin: coding-agent token usage and rate limits",
   "scripts": {

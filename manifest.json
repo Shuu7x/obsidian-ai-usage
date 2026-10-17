@@ -1,7 +1,7 @@
 {
   "id": "ai-usage",
   "name": "AI Usage",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "minAppVersion": "1.5.0",
   "description": "Coding-agent token usage and rate limits (Claude Code, Codex, Kimi, OpenCode) in the right sidebar.",
   "author": "Shuu7x",
