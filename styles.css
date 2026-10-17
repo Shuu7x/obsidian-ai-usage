@@ -22,6 +22,7 @@
 .aiu-limits { display: flex; flex-direction: column; gap: 2px; }
 .aiu-limit { border-radius: 6px; padding: 1px 4px; cursor: pointer; font-size: var(--font-ui-smaller); transition: background 120ms; }
 .aiu-limit:hover, .aiu-limit:focus-visible { background: var(--background-secondary); outline: none; }
+.aiu-limit.is-missing { opacity: .45; }
 .aiu-limit-row { display: grid; grid-template-columns: 3.5em minmax(0, 1fr) 2.8em; align-items: center; column-gap: 8px; height: 22px; padding-left: 13px; white-space: nowrap; }
 .aiu-limit-label { font-weight: 500; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; }
 .aiu-acct-head { display: flex; align-items: center; gap: 6px; height: 20px; padding: 0 4px; margin-top: 2px; font-size: var(--font-ui-smaller); white-space: nowrap; overflow: hidden; }

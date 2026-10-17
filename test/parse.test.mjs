@@ -32,6 +32,14 @@ test("limit whose reset already passed shows 0%", () => {
   assert.deepEqual(D.parseClaudeLimits({}, NOW), []);
 });
 
+test("claude: window missing from rate_limits stays as a grayed row", () => {
+  const lims = D.parseClaudeLimits({ rate_limits: { seven_day: { used_percentage: 20, resets_at: NOW + 100 } } }, NOW);
+  assert.equal(lims.length, 2);
+  assert.deepEqual(lims.map((l) => [l.label, l.pct, !!l.missing]), [["claude 5h", 0, true], ["claude 7d", 20, false]]);
+  assert.equal(lims[0].resetsAt, null);
+  assert.equal(lims[0].windowMinutes, 300);
+});
+
 test("codex window labels and null secondary", () => {
   assert.equal(D.windowLabel(10080), "7d");
   assert.equal(D.windowLabel(300), "5h");

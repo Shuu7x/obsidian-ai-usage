@@ -14,17 +14,21 @@ export function renderLimits(body: HTMLElement, ctx: Ctx) {
     const open = ctx.s.expandedGauge === l.label;
     const row = parent.createDiv({ cls: "aiu-limit" + (open ? " is-open" : "") });
     row.setAttr("role", "button"); row.setAttr("tabindex", "0");
+    if (l.missing) row.addClass("is-missing");
     const line = row.createDiv({ cls: "aiu-limit-row" });
     line.createSpan({ cls: "aiu-limit-label", text: label });
     const bar = line.createDiv({ cls: "aiu-bar" });
-    const fill = bar.createDiv({ cls: "aiu-bar-fill" + (l.pct >= 80 ? " is-hot" : "") });
-    fill.style.setProperty("--fill", gaugeColor(l.pct));
-    fill.style.width = "0%";
-    // ponytail: width animates from 0 on each render; rAF so the transition actually runs
-    requestAnimationFrame(() => { fill.style.width = `${Math.max(0, Math.min(100, l.pct))}%`; });
-    line.createSpan({ cls: "aiu-limit-pct", text: `${Math.round(l.pct)}%` });
+    if (!l.missing) {
+      const fill = bar.createDiv({ cls: "aiu-bar-fill" + (l.pct >= 80 ? " is-hot" : "") });
+      fill.style.setProperty("--fill", gaugeColor(l.pct));
+      fill.style.width = "0%";
+      // ponytail: width animates from 0 on each render; rAF so the transition actually runs
+      requestAnimationFrame(() => { fill.style.width = `${Math.max(0, Math.min(100, l.pct))}%`; });
+    }
+    line.createSpan({ cls: "aiu-limit-pct", text: l.missing ? "—" : `${Math.round(l.pct)}%` });
     if (open) {
-      row.createDiv({ cls: "aiu-limit-detail", text: `${formatReset(l.resetsAt, new Date())} · in ${countdown(l.resetsAt, nowSec)}` });
+      const text = l.missing ? "not reported by Claude right now" : `${formatReset(l.resetsAt, new Date())} · in ${countdown(l.resetsAt, nowSec)}`;
+      row.createDiv({ cls: "aiu-limit-detail", text });
     }
     const toggle = () => { ctx.s.expandedGauge = open ? null : l.label; renderLimits(body, ctx); };
     row.onclick = toggle;

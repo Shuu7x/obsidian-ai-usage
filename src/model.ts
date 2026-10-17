@@ -27,6 +27,7 @@ export interface Limit {
   resetsAt: number | null; // epoch seconds
   windowMinutes: number;
   account?: string; // "claude 1" etc. for multi-account agents
+  missing?: boolean; // window not reported by the provider
 }
 export type Metric = "tokens" | "cost";
 export type KpiPeriod = "today" | "last7" | "last30" | "month";

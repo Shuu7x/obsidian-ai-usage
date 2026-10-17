@@ -16,7 +16,7 @@ export function parseClaudeLimits(json: unknown, nowSec: number, account = "clau
   const spec: [string, string, number][] = [["five_hour", "5h", 300], ["seven_day", "7d", 10080]];
   for (const [key, lbl, mins] of spec) {
     const w = rl[key];
-    if (!w || typeof w !== "object") continue;
+    if (!w || typeof w !== "object") { out.push({ agent: "claude", label: `${account} ${lbl}`, pct: 0, resetsAt: null, windowMinutes: mins, account, missing: true }); continue; }
     const resetsAt = typeof w.resets_at === "number" ? w.resets_at : null;
     out.push({ agent: "claude", label: `${account} ${lbl}`, pct: effectivePct(num(w.used_percentage), resetsAt, nowSec), resetsAt, windowMinutes: mins, account });
   }
