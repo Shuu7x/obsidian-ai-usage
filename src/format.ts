@@ -72,6 +72,8 @@ export function gaugeColor(pct: number): string {
 }
 const AGENT_COLORS: Record<string, string> = { claude: "#f59e0b", codex: "#3b82f6", opencode: "#22c55e" };
 const OTHER_COLORS = ["#a855f7", "#ef4444"];
+/** Distinct colors for per-model chart lines (top 6 + other). */
+export const SERIES_COLORS = ["#f59e0b", "#3b82f6", "#22c55e", "#a855f7", "#ef4444", "#14b8a6", "#9ca3af"];
 /** Stable color map for a list of agents (unknown ones alternate through OTHER_COLORS). */
 export function colorMap(agents: string[]): Record<string, string> {
   const out: Record<string, string> = {};

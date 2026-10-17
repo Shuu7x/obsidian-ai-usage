@@ -1,5 +1,5 @@
 // Series, KPI and SVG point math. Pure.
-import { DayRow, EMPTY_DAY, KpiPeriod, Metric } from "./model";
+import { DayRow, EMPTY_DAY, KpiPeriod, Metric, ModelRow } from "./model";
 import { isoDay } from "./format";
 
 /** Last n days ending at `today` (local), missing days filled with an empty row. */
@@ -26,6 +26,32 @@ export function seriesByAgent(days: DayRow[], agents: string[], m: Metric): Reco
       return a ? metricOf(a, m) : 0;
     });
   }
+  return out;
+}
+
+export interface ModelTotal { model: string; agent: string; value: number }
+const modelValue = (mo: ModelRow, m: Metric) => (m === "cost" ? mo.cost : mo.inputTokens + mo.outputTokens + mo.cacheReadTokens + mo.cacheCreationTokens);
+
+/** Sum per model name over `days` in the given metric, desc; zero rows dropped. `agent` = first agent seen for the model. */
+export function modelTotals(days: DayRow[], m: Metric): ModelTotal[] {
+  const acc = new Map<string, ModelTotal>();
+  for (const d of days) for (const a of d.agents) for (const mo of a.models) {
+    const cur = acc.get(mo.modelName) ?? { model: mo.modelName, agent: a.agent, value: 0 };
+    cur.value += modelValue(mo, m);
+    acc.set(mo.modelName, cur);
+  }
+  return [...acc.values()].filter((t) => t.value > 0).sort((a, b) => b.value - a.value || a.model.localeCompare(b.model));
+}
+
+/** Per-model series aligned with `days`: the `top` models by total, everything else summed into "other" (only if non-zero). */
+export function seriesByModel(days: DayRow[], m: Metric, top = 6): Record<string, number[]> {
+  const keep = modelTotals(days, m).slice(0, top).map((t) => t.model);
+  const out: Record<string, number[]> = Object.fromEntries(keep.map((k) => [k, days.map(() => 0)]));
+  const other = days.map(() => 0);
+  days.forEach((d, i) => {
+    for (const a of d.agents) for (const mo of a.models) (out[mo.modelName] ?? other)[i] += modelValue(mo, m);
+  });
+  if (other.some((v) => v > 0)) out.other = other;
   return out;
 }
 

@@ -14,6 +14,7 @@ export interface PluginData {
   agent: string | null; // chip filter
   range: 7 | 14 | 30;
   metric: Metric;
+  groupBy: "provider" | "model"; // usage list + daily chart grouping
   collapsed: Record<string, boolean>; // section id -> collapsed
   kimiCache: KimiCache | null; // last successful kimi fetch (no secrets)
 }
@@ -27,6 +28,7 @@ export const DEFAULTS: PluginData = {
   agent: null,
   range: 14,
   metric: "tokens",
+  groupBy: "provider",
   collapsed: {},
   kimiCache: null,
 };

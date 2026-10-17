@@ -59,6 +59,8 @@
 .aiu-accts { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
 .aiu-acct { display: grid; grid-template-columns: minmax(0, 1fr) auto 56px; align-items: center; column-gap: 8px; height: 22px; padding: 0 4px; font-size: var(--font-ui-smaller); white-space: nowrap; }
 .aiu-acct-label { display: flex; align-items: center; gap: 6px; min-width: 0; overflow: hidden; }
+.aiu-acct-model { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.aiu-legend-item { max-width: 140px; overflow: hidden; text-overflow: ellipsis; }
 .aiu-acct-value { font-weight: 700; font-variant-numeric: tabular-nums; }
 .aiu-bar-sm { height: 6px; }
 @container (max-width: 300px) { .aiu-kpi-value { font-size: 11px; } .aiu-kpi { padding: 4px 2px 2px; } }

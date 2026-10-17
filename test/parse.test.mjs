@@ -86,6 +86,20 @@ test("missing days are filled with zeros, series and kpis align", () => {
   assert.deepEqual(k.month, { tokens: 15, cost: 1.5 });     // calendar month excludes 09-30
 });
 
+test("model totals and per-model series", () => {
+  const mo = (modelName, inputTokens, outputTokens, cost = 0) => ({ modelName, inputTokens, outputTokens, cacheReadTokens: 1, cacheCreationTokens: 2, cost });
+  const days = [
+    day("2026-10-16", [ag("claude", 0, 0, [mo("opus", 10, 5, 2), mo("haiku", 1, 1, 0.1)]), ag("codex", 0, 0, [mo("gpt", 30, 0)])]),
+    day("2026-10-17", [ag("claude", 0, 0, [mo("opus", 1, 1, 1), { ...mo("zero", 0, 0), cacheReadTokens: 0, cacheCreationTokens: 0 }])]),
+  ];
+  assert.deepEqual(D.modelTotals(days, "tokens"), [
+    { model: "gpt", agent: "codex", value: 33 }, { model: "opus", agent: "claude", value: 23 }, { model: "haiku", agent: "claude", value: 5 },
+  ]);
+  assert.deepEqual(D.modelTotals(days, "cost").map((t) => [t.model, t.value]), [["opus", 3], ["haiku", 0.1]]); // codex cost 0 dropped
+  assert.deepEqual(D.seriesByModel(days, "tokens", 2), { gpt: [33, 0], opus: [18, 5], other: [5, 0] });
+  assert.deepEqual(D.seriesByModel(days, "tokens"), { gpt: [33, 0], opus: [18, 5], haiku: [5, 0] }); // no "other" when nothing is left over
+});
+
 test("reset labels and live countdown", () => {
   const now = new Date(2026, 9, 17, 12, 0, 0); // Sat
   const sec = Math.floor(now.getTime() / 1000);

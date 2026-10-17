@@ -1,7 +1,7 @@
 // Usage section: four KPI cards (tap to pick the period) + per-account breakdown.
-import { KpiPeriod } from "../model";
+import { KpiPeriod, Metric } from "../model";
 import { colorMap, formatMetric } from "../format";
-import { kpis, lastDays, linePoints, metricOf } from "../chart";
+import { kpis, lastDays, linePoints, metricOf, modelTotals, periodFilter } from "../chart";
 import { accountAgents, accountTotals } from "../usage";
 import { Ctx, accountTitle, svgEl } from "./ctx";
 
@@ -30,7 +30,8 @@ const days = ctx.filtered;
   cell(k.last7[m], "7d", "last7");
   cell(k.last30[m], "30d", "last30");
   cell(k.month[m], "month", "month");
-  renderAccounts(body, ctx);
+  if (ctx.d.groupBy === "model") renderModels(body, ctx);
+  else renderAccounts(body, ctx);
 }
 
 /** Per-account rows for the selected card's period + metric, agent filter applied. */
@@ -42,19 +43,33 @@ function renderAccounts(body: HTMLElement, ctx: Ctx) {
     return;
   }
   const totals = accountTotals(ctx.s.accounts, ctx.s.periodAccounts, ctx.s.kpiPeriod, ctx.s.usageAsOf, m, agent);
-  if (!totals.length) return;
   const colors = colorMap(accountAgents(ctx.s.accounts, ctx.s.periodAccounts));
-  const max = totals[0].value;
+  renderRows(body, totals.map((t) => ({ value: t.value, color: colors[t.agent], label: (el) => accountTitle(el, t.account, t.agent, ctx.s.emails[t.account]) })), m);
+}
+
+/** Per-model rows for the selected card's period + metric (agent filter already applied to ctx.filtered). */
+function renderModels(body: HTMLElement, ctx: Ctx) {
+  const m = ctx.d.metric;
+  const inPeriod = periodFilter(ctx.s.kpiPeriod, ctx.s.usageAsOf);
+  const totals = modelTotals(ctx.filtered.filter((d) => inPeriod(d.period)), m);
+  const colors = colorMap(ctx.all);
+  renderRows(body, totals.map((t) => ({ value: t.value, color: colors[t.agent], label: (el) => el.createSpan({ cls: "aiu-acct-model", text: t.model, attr: { title: t.model } }) })), m);
+}
+
+/** Rows are already sorted desc; the first is the bar scale. */
+function renderRows(body: HTMLElement, rows: { value: number; color: string; label: (el: HTMLElement) => void }[], m: Metric) {
+  if (!rows.length) return;
+  const max = rows[0].value;
   const list = body.createDiv({ cls: "aiu-accts" });
-  for (const t of totals) {
+  for (const t of rows) {
     const row = list.createDiv({ cls: "aiu-acct" });
     const name = row.createDiv({ cls: "aiu-acct-label" });
-    name.createSpan({ cls: "aiu-dot" }).style.background = colors[t.agent];
-    accountTitle(name, t.account, t.agent, ctx.s.emails[t.account]);
+    name.createSpan({ cls: "aiu-dot" }).style.background = t.color;
+    t.label(name);
     row.createSpan({ cls: "aiu-acct-value", text: formatMetric(t.value, m) });
     const bar = row.createDiv({ cls: "aiu-bar aiu-bar-sm" });
     const fill = bar.createDiv({ cls: "aiu-bar-fill" });
-    fill.style.setProperty("--fill", colors[t.agent]);
+    fill.style.setProperty("--fill", t.color);
     fill.style.width = "0%";
     requestAnimationFrame(() => { fill.style.width = `${max > 0 ? (t.value / max) * 100 : 0}%`; });
   }

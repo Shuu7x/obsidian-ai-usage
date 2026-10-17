@@ -23,3 +23,11 @@ export function renderMetricToggle(parent: HTMLElement, ctx: Ctx) {
     b.onclick = () => ctx.patch({ metric: m });
   }
 }
+
+export function renderGroupToggle(parent: HTMLElement, ctx: Ctx) {
+  const bar = parent.createDiv({ cls: "aiu-toggle" });
+  for (const g of ["provider", "model"] as const) {
+    const b = bar.createEl("button", { cls: "aiu-toggle-btn" + (ctx.d.groupBy === g ? " is-active" : ""), text: g === "provider" ? "Provider" : "Model" });
+    b.onclick = () => ctx.patch({ groupBy: g });
+  }
+}

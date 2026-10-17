@@ -1,8 +1,8 @@
 // Daily section: range toggle, line chart with hover tooltip + click-to-detail, legend toggles.
 import { setIcon } from "obsidian";
 import { DayRow } from "../model";
-import { colorMap, formatCost, formatMetric, formatTokens } from "../format";
-import { lastDays, linePoints, seriesByAgent } from "../chart";
+import { SERIES_COLORS, colorMap, formatCost, formatMetric, formatTokens } from "../format";
+import { lastDays, linePoints, seriesByAgent, seriesByModel } from "../chart";
 import { Ctx, svgEl } from "./ctx";
 
 export function renderDaily(body: HTMLElement, ctx: Ctx) {
@@ -20,9 +20,11 @@ export function renderDaily(body: HTMLElement, ctx: Ctx) {
 
   const days = lastDays(filtered, d.range, new Date());
   const agents = d.agent ? [d.agent] : all;
-  const colors = colorMap(all);
-  const series = seriesByAgent(days, agents, m);
-  const visible = agents.filter((a) => !ctx.s.hidden.has(a));
+  const byModel = d.groupBy === "model";
+  const series = byModel ? seriesByModel(days, m) : seriesByAgent(days, agents, m);
+  const keys = byModel ? Object.keys(series) : agents; // legend + line keys
+  const colors = byModel ? Object.fromEntries(keys.map((k, i) => [k, SERIES_COLORS[i]])) : colorMap(all);
+  const visible = keys.filter((a) => !ctx.s.hidden.has(a));
   const max = Math.max(0, ...visible.flatMap((a) => series[a]));
 
   const W = 300, H = 130, L = 34, R = 8, T = 8, B = 20, pw = W - L - R, ph = H - T - B;
@@ -75,7 +77,7 @@ export function renderDaily(body: HTMLElement, ctx: Ctx) {
 
   // legend: click toggles visibility
   const leg = body.createDiv({ cls: "aiu-legend" });
-  for (const a of agents) {
+  for (const a of keys) {
     const it = leg.createEl("button", { cls: "aiu-chip aiu-legend-item" + (ctx.s.hidden.has(a) ? " is-hidden" : ""), text: a });
     it.style.setProperty("--chip-color", colors[a]);
     it.onclick = () => { ctx.s.hidden.has(a) ? ctx.s.hidden.delete(a) : ctx.s.hidden.add(a); ctx.rerender(); };
