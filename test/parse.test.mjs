@@ -12,7 +12,7 @@ const dir = mkdtempSync(join(tmpdir(), "aiu-"));
 const stub = join(dir, "obsidian.mjs");
 writeFileSync(stub, "export const requestUrl = () => { throw new Error('stub'); };\n");
 const out = join(dir, "pure.mjs");
-const MODULES = ["model", "format", "chart", "usage", "providers/claude", "providers/codex", "providers/kimi"];
+const MODULES = ["model", "format", "chart", "usage", "providers/claude", "providers/codex", "providers/kimi", "providers/opencode"];
 buildSync({
   stdin: { contents: MODULES.map((m) => `export * from "./src/${m}";`).join("\n"), resolveDir: process.cwd(), loader: "ts" },
   bundle: true, format: "esm", platform: "node", outfile: out, logLevel: "silent", alias: { obsidian: stub },
@@ -209,6 +209,12 @@ test("multi-account codex: limits per home, fake-JWT email, codex daily merge", 
   ]);
   assert.equal(merged[0].agents.find((a) => a.agent === "codex").models.length, 1);
   assert.equal(base[0].agents[1].totalTokens, 20);
+});
+
+test("opencode daily: one opencode agent, per-model cost kept, bad rows dropped", () => {
+  const oc = D.parseOpencodeDaily({ daily: [{ date: "2026-09-23", totalTokens: 9, totalCost: 0.9, modelBreakdowns: [{ modelName: "custom", inputTokens: 1, outputTokens: 2, cacheReadTokens: 3, cacheCreationTokens: 0, cost: 0 }, { modelName: "m2", inputTokens: 1, outputTokens: 1, cacheReadTokens: 0, cacheCreationTokens: 0, cost: 0.9 }] }, { date: "bogus", totalTokens: 1 }] });
+  assert.deepEqual(oc.map((d) => [d.period, d.totalCost, d.agents[0].agent, d.agents[0].models.map((m) => [m.modelName, m.cost])]), [["2026-09-23", 0.9, "opencode", [["custom", 0], ["m2", 0.9]]]]);
+  assert.deepEqual(D.parseOpencodeDaily(null), []);
 });
 
 test("kimi cache: fresh fetch replaces, stale reuse zeroes passed windows, no cache -> null", () => {

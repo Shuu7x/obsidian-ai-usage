@@ -9,6 +9,7 @@ import { periodFilter } from "./chart";
 import { isoDay } from "./format";
 import * as claude from "./providers/claude";
 import * as codex from "./providers/codex";
+import { parseOpencodeDaily } from "./providers/opencode";
 
 const CCUSAGE = "ccusage@20.0.34";
 
@@ -142,6 +143,11 @@ export async function fetchUsage(bunxPath: string, codexHomes: string[], claudeD
     accounts.push(...agentAsAccount(x.days, "codex", x.account));
     days = mergeUsage(days, x.days);
   }
+  try {
+    const oc = parseOpencodeDaily(await run(["opencode", "daily", "--since", since, "--json"]));
+    accounts.push(...agentAsAccount(oc, "opencode", "opencode"));
+    days = mergeUsage(days, oc);
+  } catch { /* ponytail: opencode failing must not hide the main report */ }
   const byPeriod = await claude.usageByPeriod(run, claudeDirs, asOf);
   return { asOf, days, accounts, periodAccounts: byPeriod.rows, breakdownFailed: byPeriod.failed };
 }
