@@ -1,6 +1,6 @@
 // Limits section: one header per account/agent, aligned bar rows, click to expand reset details.
 import { Limit } from "../model";
-import { colorMap, countdown, formatReset, gaugeColor, hhmm, windowLabel } from "../format";
+import { colorMap, countdown, formatReset, gaugeColor, hhmm } from "../format";
 import { Ctx, accountTitle } from "./ctx";
 
 export function renderLimits(body: HTMLElement, ctx: Ctx) {
@@ -24,7 +24,7 @@ export function renderLimits(body: HTMLElement, ctx: Ctx) {
     requestAnimationFrame(() => { fill.style.width = `${Math.max(0, Math.min(100, l.pct))}%`; });
     line.createSpan({ cls: "aiu-limit-pct", text: `${Math.round(l.pct)}%` });
     if (open) {
-      row.createDiv({ cls: "aiu-limit-detail", text: `${formatReset(l.resetsAt, new Date())} · in ${countdown(l.resetsAt, nowSec)} · ${l.pct.toFixed(1)}% used · window ${windowLabel(l.windowMinutes)} (${l.windowMinutes} min)` });
+      row.createDiv({ cls: "aiu-limit-detail", text: `${formatReset(l.resetsAt, new Date())} · in ${countdown(l.resetsAt, nowSec)}` });
     }
     const toggle = () => { ctx.s.expandedGauge = open ? null : l.label; renderLimits(body, ctx); };
     row.onclick = toggle;
