@@ -1,0 +1,30 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"   # Obsidian release tags carry no "v"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+      - name: Check manifest version matches tag
+        run: |
+          v=$(node -p "require('./manifest.json').version")
+          [ "$v" = "${GITHUB_REF_NAME}" ] || { echo "manifest.json version $v != tag ${GITHUB_REF_NAME}"; exit 1; }
+      - name: Create release
+        run: gh release create "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME}" --generate-notes main.js manifest.json styles.css
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

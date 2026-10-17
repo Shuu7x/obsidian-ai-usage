@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "ESNext",
+    "target": "ES2022",
+    "moduleResolution": "node",
+    "allowJs": true,
+    "noImplicitAny": true,
+    "strict": true,
+    "isolatedModules": true,
+    "importHelpers": false,
+    "lib": ["DOM", "ES2022"],
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts"]
+}
