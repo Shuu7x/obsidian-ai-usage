@@ -15,6 +15,12 @@ export default class AiUsagePlugin extends Plugin {
 
   async save() { await this.saveData(this.data); }
 
+  // data.json changed outside Obsidian (another tool, sync): reload so the next save() does not overwrite it
+  async onExternalSettingsChange() {
+    this.data = { ...DEFAULTS, ...((await this.loadData()) ?? {}) };
+    for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE)) (leaf.view as AiUsageView).refresh();
+  }
+
   async activate() {
     const { workspace } = this.app;
     let leaf = workspace.getLeavesOfType(VIEW_TYPE)[0];
