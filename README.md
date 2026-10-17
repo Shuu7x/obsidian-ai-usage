@@ -1,13 +1,13 @@
 # AI Usage (Obsidian plugin)
 
-Token usage and rate limits of your coding agents (Claude Code, Codex, Kimi) in Obsidian's right sidebar.
+Token usage and rate limits of your coding agents (Claude Code, Codex, Kimi, OpenCode) in Obsidian's right sidebar.
 Desktop only. Read-only: it never writes notes to your vault.
 
 ![screenshot placeholder](docs/screenshot.png)
 
 ## What it shows
 
-- **Agent chips** (All / claude / codex / kimi) that filter every widget. Tokens / Cost toggle.
+- **Agent chips** (All / claude / codex / kimi / opencode) that filter every widget. Tokens / Cost toggle. Provider / Model switch (usage list and daily chart per model).
 - **Limits**: one progress-bar row per rate-limit window (claude 5h, claude 7d, codex 7d, kimi 5h, …), grouped
   per account with the account email. Click a row for exact %, window length, reset time and a live countdown.
   A notice fires once per window when a limit reaches 80%.
