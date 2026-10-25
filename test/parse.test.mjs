@@ -342,3 +342,22 @@ test("colors and chart points", () => {
   assert.equal(D.linePoints([0, 5, 10], 10, 0, 100, 0, 50), "0.0,50.0 50.0,25.0 100.0,0.0");
   assert.equal(D.linePoints([0, 0], 0, 0, 100, 0, 50), "0.0,50.0 100.0,50.0");
 });
+
+test("ccusage calls run one at a time and a failed call does not block the next", async () => {
+  let running = 0, maxRunning = 0;
+  const task = (value, ms, fail = false) => () => {
+    running++; maxRunning = Math.max(maxRunning, running);
+    return new Promise((resolve) => setTimeout(resolve, ms)).finally(() => { running--; }).then(() => {
+      if (fail) throw new Error("boom");
+      return value;
+    });
+  };
+  const results = await Promise.allSettled([
+    D.serialize(task(1, 20)),
+    D.serialize(task(2, 5, true)),
+    D.serialize(task(3, 1)),
+  ]);
+  assert.deepEqual(results.map((r) => r.status), ["fulfilled", "rejected", "fulfilled"]);
+  assert.equal(results[2].value, 3);
+  assert.equal(maxRunning, 1);
+});

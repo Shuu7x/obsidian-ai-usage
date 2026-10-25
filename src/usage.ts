@@ -13,9 +13,19 @@ import { parseOpencodeDaily } from "./providers/opencode";
 
 const CCUSAGE = "ccusage@20.0.34";
 
+let ccusageQueue: Promise<unknown> = Promise.resolve();
+
+/** Runs tasks one after another. Parallel bunx runs of the same package race on linking (EEXIST), so ccusage calls go through here.
+ *  Chained on settle, not on success: a rejected task does not block the ones queued after it. */
+export function serialize<T>(task: () => Promise<T>): Promise<T> {
+  const next = ccusageQueue.then(task);
+  ccusageQueue = next.catch(() => {});
+  return next;
+}
+
 /** Runner bound to a bunx path. Each call uses a private temp cwd so bunx cannot pick up a planted bunfig/package.json. */
 export function ccusageRunner(bunxPath: string): CcusageRunner {
-  return (args, env = process.env) => {
+  return (args, env = process.env) => serialize(() => {
     const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "ai-usage-"));
     return new Promise((resolve, reject) => {
       execFile(bunxPath.replace(/^~/, os.homedir()), [CCUSAGE, ...args], { cwd, env, maxBuffer: 64 * 1024 * 1024, timeout: 120_000 }, (err, stdout) => {
@@ -24,7 +34,7 @@ export function ccusageRunner(bunxPath: string): CcusageRunner {
         try { resolve(JSON.parse(stdout)); } catch (e) { reject(e); }
       });
     });
-  };
+  });
 }
 
 /** YYYYMMDD for 31 days ago (ccusage --since). */
