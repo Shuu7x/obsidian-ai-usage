@@ -65,6 +65,9 @@ Already have a status line? Chain it:
 
 The script writes `statusline-last.json` and `account-sessions.txt` into the Claude config dir and nothing else.
 
+On Windows, run it with Git Bash and forward slashes, e.g. `sh C:/Users/<name>/path/claude-limits-tap.sh`.
+Set `CLAUDE_CONFIG_DIR` with forward slashes too (e.g. `C:/Users/<name>/.claude-2`).
+
 ### Multiple accounts
 
 - **Claude Code**: run each account with its own `CLAUDE_CONFIG_DIR` (for example `~/.claude-2`), then list every
